@@ -1,5 +1,6 @@
 # Render Blueprint — https://render.com/docs/blueprint-spec
 # Connect your GitHub repo → Render auto-deploys on push to main
+# Frontend is deployed via GitHub Pages (see .github/workflows/deploy-frontend.yml)
 
 databases:
   - name: kai-db
@@ -14,7 +15,6 @@ services:
     runtime: docker
     dockerfilePath: ./apps/backend/Dockerfile
     dockerContext: .
-    plan: free
     branch: main
     healthCheckPath: /api/health
     envVars:
@@ -51,29 +51,4 @@ services:
       - key: JWT_REFRESH_SECRET
         generateValue: true
       - key: CORS_ORIGINS
-        sync: false  # Set manually after frontend deploys
-
-  # ===== Frontend Static Site =====
-  - type: web
-    name: kai-web
-    runtime: static
-    plan: free
-    branch: main
-    buildCommand: npm ci && npm run build --workspace=@aidevblogs/shared && npm run build --workspace=@aidevblogs/frontend
-    staticPublishPath: apps/frontend/dist
-    headers:
-      - path: /assets/*
-        name: Cache-Control
-        value: public, max-age=31536000, immutable
-      - path: /*
-        name: X-Frame-Options
-        value: DENY
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
-    envVars:
-      - key: VITE_API_URL
-        sync: false  # Set manually: https://kai-api.onrender.com/api
-      - key: NODE_VERSION
-        value: 20.11.0
+        sync: false  # Set manually: https://<username>.github.io
