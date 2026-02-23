@@ -1,0 +1,46 @@
+name: Deploy to Production
+
+# Render auto-deploys from main branch via GitHub integration.
+# This workflow runs a post-deploy health check.
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    branches: [main]
+    types: [completed]
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Wait for Render deploy
+        run: |
+          echo "Waiting 120s for Render to pick up and deploy..."
+          sleep 120
+
+      - name: Health check — API
+        run: |
+          for i in 1 2 3 4 5; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" ${{ vars.API_URL }}/api/health || true)
+            if [ "$STATUS" = "200" ]; then
+              echo "API is healthy!"
+              exit 0
+            fi
+            echo "Attempt $i: got $STATUS, retrying in 30s..."
+            sleep 30
+          done
+          echo "Health check failed after 5 attempts"
+          exit 1
+
+      - name: Health check — Frontend
+        if: vars.FRONTEND_URL != ''
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" ${{ vars.FRONTEND_URL }} || true)
+          if [ "$STATUS" = "200" ]; then
+            echo "Frontend is healthy!"
+          else
+            echo "Frontend returned $STATUS"
+            exit 1
+          fi

@@ -1,0 +1,18 @@
+name: Deploy to Staging
+
+# This workflow is a placeholder for a staging environment.
+# To use it:
+# 1. Create a separate branch (e.g., 'develop')
+# 2. Create staging services on Render with that branch
+# 3. Uncomment and configure the health check below
+
+on:
+  push:
+    branches: [develop]
+
+jobs:
+  staging-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Info
+        run: echo "Staging deploy triggered. Render auto-deploys from the develop branch."
