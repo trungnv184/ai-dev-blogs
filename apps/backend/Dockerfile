@@ -9,7 +9,7 @@ COPY apps/backend/package*.json ./apps/backend/
 COPY packages/shared/package*.json ./packages/shared/
 
 # Install dependencies
-RUN npm ci --workspace=@shared --workspace=@aidevblogs/backend
+RUN npm ci --workspace=@aidevblogs/shared --workspace=@aidevblogs/backend
 
 # Copy source code
 COPY packages/shared ./packages/shared
@@ -17,7 +17,7 @@ COPY apps/backend ./apps/backend
 COPY tsconfig.base.json ./
 
 # Build shared package
-RUN npm run build --workspace=@shared
+RUN npm run build --workspace=@aidevblogs/shared
 
 # Build backend
 RUN npm run build --workspace=@aidevblogs/backend
@@ -33,7 +33,7 @@ COPY apps/backend/package*.json ./apps/backend/
 COPY packages/shared/package*.json ./packages/shared/
 
 # Install production dependencies only
-RUN npm ci --workspace=@shared --workspace=@aidevblogs/backend --omit=dev
+RUN npm ci --workspace=@aidevblogs/shared --workspace=@aidevblogs/backend --omit=dev
 
 # Copy built files
 COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
