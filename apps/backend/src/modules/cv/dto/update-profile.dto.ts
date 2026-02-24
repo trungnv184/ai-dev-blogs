@@ -45,7 +45,7 @@ export class UpdateProfileDto {
   title: string;
 
   @IsString()
-  @MaxLength(1000)
+  @MaxLength(5000)
   summary: string;
 
   @IsOptional()

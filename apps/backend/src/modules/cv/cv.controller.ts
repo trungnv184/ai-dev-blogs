@@ -162,17 +162,19 @@ export class CVController {
     return profile;
   }
 
-  @Get('profile/image/:fileName')
+  @Get('profile/image/:identifier')
   async getProfileImage(
-    @Param('fileName') fileName: string,
+    @Param('identifier') identifier: string,
     @Res() res: Response,
   ): Promise<void> {
-    const filePath = await this.cvService.getProfileImagePath(fileName);
+    const image = await this.cvService.getProfileImage(identifier);
 
-    if (!filePath) {
+    if (!image) {
       throw new NotFoundException('Image not found');
     }
 
-    res.sendFile(filePath);
+    res.setHeader('Content-Type', image.mimeType);
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.send(image.data);
   }
 }

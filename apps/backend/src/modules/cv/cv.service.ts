@@ -380,8 +380,8 @@ export class CVService {
       summary: profile.summary,
       location: profile.location,
       locationUrl: profile.locationUrl,
-      profileImageUrl: profile.profileImagePath
-        ? `/api/cv/profile/image/${profile.profileImagePath}`
+      profileImageUrl: profile.profileImageData
+        ? `/api/cv/profile/image/${profile.id}`
         : undefined,
       contacts: profile.contacts,
     };
@@ -423,49 +423,41 @@ export class CVService {
       });
     }
 
-    // Delete existing image if present
-    const profile = await this.profileDataRepository.findOne({ where: {} });
-    if (profile?.profileImagePath) {
-      const existingPath = path.join(
-        this.profileImagesDir,
-        profile.profileImagePath,
-      );
-      if (fs.existsSync(existingPath)) {
-        fs.unlinkSync(existingPath);
-      }
+    let profile = await this.profileDataRepository.findOne({ where: {} });
+
+    if (!profile) {
+      profile = new ProfileDataEntity();
+      profile.name = 'Your Name';
+      profile.title = 'Your Title';
+      profile.summary = 'Your professional summary';
+      profile.contacts = {};
     }
 
-    // Generate unique filename
-    const extension = file.mimetype.split('/')[1];
-    const fileName = `${uuidv4()}.${extension}`;
-    const filePath = path.join(this.profileImagesDir, fileName);
+    // Store image as base64 in database
+    profile.profileImageData = file.buffer.toString('base64');
+    profile.profileImageMimeType = file.mimetype;
+    profile.profileImagePath = `${uuidv4()}.${file.mimetype.split('/')[1]}`;
+    await this.profileDataRepository.save(profile);
 
-    // Save file
-    fs.writeFileSync(filePath, file.buffer);
-
-    // Update profile with image path
-    if (profile) {
-      profile.profileImagePath = fileName;
-      await this.profileDataRepository.save(profile);
-    } else {
-      // Create a minimal profile if none exists
-      const newProfile = new ProfileDataEntity();
-      newProfile.name = 'Your Name';
-      newProfile.title = 'Your Title';
-      newProfile.summary = 'Your professional summary';
-      newProfile.profileImagePath = fileName;
-      newProfile.contacts = {};
-      await this.profileDataRepository.save(newProfile);
-    }
-
-    return `/api/cv/profile/image/${fileName}`;
+    return `/api/cv/profile/image/${profile.id}`;
   }
 
-  async getProfileImagePath(fileName: string): Promise<string | null> {
-    const filePath = path.join(this.profileImagesDir, fileName);
-    if (!fs.existsSync(filePath)) {
+  async getProfileImage(identifier: string): Promise<{ data: Buffer; mimeType: string } | null> {
+    // Try to find by ID first (new format), then by filename (legacy)
+    let profile = await this.profileDataRepository.findOne({ where: { id: identifier } });
+    if (!profile) {
+      profile = await this.profileDataRepository.findOne({
+        where: { profileImagePath: identifier },
+      });
+    }
+
+    if (!profile?.profileImageData) {
       return null;
     }
-    return filePath;
+
+    return {
+      data: Buffer.from(profile.profileImageData, 'base64'),
+      mimeType: profile.profileImageMimeType || 'image/jpeg',
+    };
   }
 }

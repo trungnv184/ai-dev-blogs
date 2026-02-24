@@ -41,6 +41,12 @@ export class ProfileDataEntity {
   @Column({ type: 'varchar', length: 500, nullable: true })
   profileImagePath?: string;
 
+  @Column({ type: 'text', nullable: true })
+  profileImageData?: string;
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  profileImageMimeType?: string;
+
   @Column({ type: 'jsonb', default: {} })
   contacts: ContactInfoData;
 
