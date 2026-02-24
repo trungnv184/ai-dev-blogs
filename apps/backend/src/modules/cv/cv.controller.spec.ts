@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
-import { Readable } from 'stream';
 
 import { CVController } from './cv.controller';
 import { CVService, CVParseResult, PublicCVData } from './cv.service';
@@ -49,7 +48,7 @@ describe('CVController', () => {
       getManagementSkills: jest.fn(),
       updateManagementSkills: jest.fn(),
       getPublicCV: jest.fn(),
-      getDownloadStream: jest.fn(),
+      getDownloadData: jest.fn(),
       logDownload: jest.fn(),
     };
 
@@ -325,13 +324,9 @@ describe('CVController', () => {
   });
 
   describe('GET /cv/download', () => {
-    it('should stream PDF file for download', async () => {
-      const mockStream = new Readable();
-      mockStream.push('%PDF-1.4 content');
-      mockStream.push(null);
-
-      cvService.getDownloadStream.mockResolvedValue({
-        stream: mockStream as never,
+    it('should send PDF buffer for download', async () => {
+      cvService.getDownloadData.mockResolvedValue({
+        buffer: Buffer.from('%PDF-1.4 content'),
         filename: 'Test_Developer_CV.pdf',
       });
       cvService.logDownload.mockResolvedValue(undefined);
@@ -346,7 +341,7 @@ describe('CVController', () => {
     });
 
     it('should return 404 when CV is not available for download', async () => {
-      cvService.getDownloadStream.mockResolvedValue(null);
+      cvService.getDownloadData.mockResolvedValue(null);
 
       const response = await request(app.getHttpServer())
         .get('/cv/download')

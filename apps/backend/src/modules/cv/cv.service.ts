@@ -9,7 +9,6 @@ import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import { createReadStream, ReadStream } from 'fs';
 
 import {
   CVDataEntity,
@@ -125,20 +124,9 @@ export class CVService {
         });
       }
 
-      // Delete existing CV file if present
-      const existingCV = await this.cvDataRepository.findOne({ where: {} });
-      if (existingCV?.pdfFilePath) {
-        const existingPath = path.join(this.uploadsDir, existingCV.pdfFilePath);
-        if (fs.existsSync(existingPath)) {
-          fs.unlinkSync(existingPath);
-        }
-      }
-
-      // Store new PDF file
+      // Store PDF data in database
       const fileUuid = uuidv4();
       const fileName = `${fileUuid}.pdf`;
-      const filePath = path.join(this.uploadsDir, fileName);
-      fs.writeFileSync(filePath, buffer);
 
       // Parse PDF
       const parsedData = await this.pdfParserService.parse(buffer);
@@ -157,6 +145,7 @@ export class CVService {
       }
 
       // Upsert CV data
+      const existingCV = await this.cvDataRepository.findOne({ where: {} });
       const cvData = existingCV ?? new CVDataEntity();
 
       // Log work history before and after parsing
@@ -171,6 +160,7 @@ export class CVService {
       cvData.education = parsedData.education as EducationEntryData[];
       cvData.pdfFileName = file.originalname;
       cvData.pdfFilePath = fileName;
+      cvData.pdfData = buffer.toString('base64');
 
       console.log('Final work history to save:', JSON.stringify(cvData.workHistory, null, 2));
       console.log('=== End Work History Debug ===');
@@ -327,21 +317,15 @@ export class CVService {
     return savedSkills;
   }
 
-  async getDownloadStream(): Promise<{
-    stream: ReadStream;
+  async getDownloadData(): Promise<{
+    buffer: Buffer;
     filename: string;
   } | null> {
     const cvData = await this.cvDataRepository.findOne({
       where: { published: true },
     });
 
-    if (!cvData?.pdfFilePath) {
-      return null;
-    }
-
-    const filePath = path.join(this.uploadsDir, cvData.pdfFilePath);
-
-    if (!fs.existsSync(filePath)) {
+    if (!cvData?.pdfData) {
       return null;
     }
 
@@ -350,7 +334,7 @@ export class CVService {
     const filename = `${ownerName.replace(/\s+/g, '_')}_CV.pdf`;
 
     return {
-      stream: createReadStream(filePath),
+      buffer: Buffer.from(cvData.pdfData, 'base64'),
       filename,
     };
   }

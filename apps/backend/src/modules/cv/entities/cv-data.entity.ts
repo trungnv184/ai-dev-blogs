@@ -57,6 +57,9 @@ export class CVDataEntity {
   @Column({ type: 'varchar', nullable: true })
   pdfFilePath: string;
 
+  @Column({ type: 'text', nullable: true })
+  pdfData: string;
+
   @Column({ type: 'boolean', default: false })
   published: boolean;
 

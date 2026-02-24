@@ -101,7 +101,7 @@ export class CVController {
 
   @Get('download')
   async downloadCV(@Req() req: Request, @Res() res: Response): Promise<void> {
-    const result = await this.cvService.getDownloadStream();
+    const result = await this.cvService.getDownloadData();
 
     if (!result) {
       res.status(HttpStatus.NOT_FOUND).json({
@@ -123,7 +123,7 @@ export class CVController {
       `attachment; filename="${result.filename}"`,
     );
 
-    result.stream.pipe(res);
+    res.send(result.buffer);
   }
 
   // Profile endpoints
