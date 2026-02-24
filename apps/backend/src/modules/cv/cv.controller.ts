@@ -132,7 +132,16 @@ export class CVController {
   @UseGuards(JwtAuthGuard)
   async getProfile() {
     const profile = await this.cvService.getProfile();
-    return profile;
+    if (!profile) return null;
+
+    // Return profile with image URL, exclude raw base64 data
+    const { profileImageData, ...rest } = profile;
+    return {
+      ...rest,
+      profileImageUrl: profileImageData
+        ? `/api/cv/profile/image/${profile.id}`
+        : undefined,
+    };
   }
 
   @Put('profile')
