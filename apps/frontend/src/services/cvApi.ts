@@ -202,6 +202,21 @@ export function getDownloadUrl(): string {
   return `${baseUrl}/cv/download`;
 }
 
+/**
+ * Resolves a relative API image path to a full URL.
+ * Backend returns paths like /api/cv/profile/image/{id},
+ * but the frontend may be on a different domain.
+ */
+export function resolveApiImageUrl(path?: string): string | undefined {
+  if (!path) return undefined;
+  if (path.startsWith('http')) return path;
+  const baseUrl = import.meta.env.VITE_API_URL || '/api';
+  // path is like /api/cv/profile/image/{id}, baseUrl is like https://host.com/api
+  // Remove /api prefix from path since baseUrl already includes it
+  const cleanPath = path.startsWith('/api/') ? path.slice(4) : path;
+  return `${baseUrl}${cleanPath}`;
+}
+
 // Profile types
 export interface ContactInfo {
   email?: string;

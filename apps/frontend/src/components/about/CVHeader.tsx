@@ -1,4 +1,5 @@
 import { usePublicProfile } from '../../hooks/useCV';
+import { resolveApiImageUrl } from '../../services/cvApi';
 import { ContactIcons } from './ContactIcons';
 
 export function CVHeader() {
@@ -61,13 +62,14 @@ export function CVHeader() {
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-b border-gray-100 dark:border-gray-800">
           <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
             {/* Profile photo */}
-            {profile.profileImageUrl ? (
+            {resolveApiImageUrl(profile.profileImageUrl) ? (
               <div className="relative group">
                 <div className="absolute -inset-1 bg-gradient-to-br from-primary-500 via-accent-purple to-accent-pink rounded-2xl opacity-50 group-hover:opacity-75 blur transition-opacity duration-300" />
                 <img
-                  src={profile.profileImageUrl}
+                  src={resolveApiImageUrl(profile.profileImageUrl)}
                   alt={profile.name}
                   className="relative w-36 h-36 rounded-2xl object-cover ring-4 ring-white dark:ring-gray-950"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                 />
               </div>
             ) : (
@@ -130,11 +132,12 @@ export function CVHeader() {
             )}
             <ContactIcons contacts={profile.contacts} />
           </div>
-          {profile.profileImageUrl && (
+          {resolveApiImageUrl(profile.profileImageUrl) && (
             <img
-              src={profile.profileImageUrl}
+              src={resolveApiImageUrl(profile.profileImageUrl)}
               alt={profile.name}
               className="w-20 h-20 rounded-xl object-cover"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
             />
           )}
         </div>

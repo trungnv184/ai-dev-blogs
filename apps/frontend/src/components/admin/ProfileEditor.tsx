@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { useProfile, useProfileMutations } from '../../hooks/useCV';
-import { UpdateProfileData, ContactInfo } from '../../services/cvApi';
+import { UpdateProfileData, ContactInfo, resolveApiImageUrl } from '../../services/cvApi';
 
 export function ProfileEditor() {
   const { data: profile, isLoading } = useProfile();
   const { update, uploadImage } = useProfileMutations();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
 
   const [formData, setFormData] = useState<UpdateProfileData>({
     name: '',
@@ -79,6 +80,7 @@ export function ProfileEditor() {
 
     // Upload image
     try {
+      setImageError(false);
       await uploadImage.mutateAsync(file);
     } catch (error) {
       console.error('Failed to upload image:', error);
@@ -130,11 +132,12 @@ export function ProfileEditor() {
           className="w-24 h-24 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary-500 transition-all"
           onClick={() => fileInputRef.current?.click()}
         >
-          {imagePreview || profile?.profileImageUrl ? (
+          {(imagePreview || resolveApiImageUrl(profile?.profileImageUrl)) && !imageError ? (
             <img
-              src={imagePreview || profile?.profileImageUrl}
+              src={imagePreview || resolveApiImageUrl(profile?.profileImageUrl)}
               alt="Profile"
               className="w-full h-full object-cover"
+              onError={() => setImageError(true)}
             />
           ) : (
             <svg
