@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useProfile, useProfileMutations } from '../../hooks/useCV';
 import { UpdateProfileData, ContactInfo } from '../../services/cvApi';
 
@@ -25,7 +25,7 @@ export function ProfileEditor() {
   });
 
   // Update form when profile data loads
-  useState(() => {
+  useEffect(() => {
     if (profile) {
       setFormData({
         name: profile.name,
@@ -43,26 +43,7 @@ export function ProfileEditor() {
         },
       });
     }
-  });
-
-  // Sync form data when profile changes
-  if (profile && formData.name === '' && profile.name) {
-    setFormData({
-      name: profile.name,
-      title: profile.title,
-      summary: profile.summary,
-      location: profile.location || '',
-      locationUrl: profile.locationUrl || '',
-      contacts: {
-        email: profile.contacts.email || '',
-        phone: profile.contacts.phone || '',
-        website: profile.contacts.website || '',
-        linkedin: profile.contacts.linkedin || '',
-        github: profile.contacts.github || '',
-        twitter: profile.contacts.twitter || '',
-      },
-    });
-  }
+  }, [profile]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -119,6 +100,8 @@ export function ProfileEditor() {
     try {
       await update.mutateAsync({
         ...formData,
+        location: formData.location?.trim() || undefined,
+        locationUrl: formData.locationUrl?.trim() || undefined,
         contacts: cleanedContacts,
       });
     } catch (error) {
