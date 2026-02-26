@@ -12,16 +12,32 @@ export function CVDownload({ cvUrl }: CVDownloadProps) {
 
     setIsDownloading(true);
 
-    // Track download event
-    console.log('CV Download tracked');
+    try {
+      const response = await fetch(cvUrl);
 
-    // Simulate download delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
+      if (!response.ok) {
+        throw new Error('Download failed');
+      }
 
-    // Open CV URL
-    window.open(cvUrl, '_blank');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
 
-    setIsDownloading(false);
+      // Extract filename from Content-Disposition header or use default
+      const disposition = response.headers.get('Content-Disposition');
+      const filenameMatch = disposition?.match(/filename="?([^"]+)"?/);
+      link.download = filenameMatch?.[1] ?? 'CV.pdf';
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch {
+      console.error('CV download failed');
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   return (

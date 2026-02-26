@@ -3,6 +3,7 @@ import { Layout } from '../components/common/Layout';
 import { PostCard } from '../components/blog/PostCard';
 import { PostList } from '../components/blog/PostList';
 import { CVDownload } from '../components/about/CVDownload';
+import { getDownloadUrl } from '../services/cvApi';
 import { SkillsPieChart } from '../components/about/SkillsPieChart';
 import { usePosts } from '../hooks/usePosts';
 
@@ -160,7 +161,7 @@ export function Home() {
                 <Link to="/about" className="btn btn-secondary px-6">
                   About Me
                 </Link>
-                <CVDownload cvUrl="/cv.pdf" />
+                <CVDownload cvUrl={getDownloadUrl()} />
               </div>
 
               {/* Social proof */}

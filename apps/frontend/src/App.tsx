@@ -9,6 +9,7 @@ import { BlogPost } from './pages/BlogPost';
 import { About } from './pages/About';
 import { Contact } from './pages/Contact';
 import { NotFound } from './pages/NotFound';
+import { LargeListDemo } from './pages/LargeListDemo';
 
 // Admin Pages
 import { Login } from './pages/admin/Login';
@@ -38,6 +39,7 @@ function App() {
             <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/demos/large-list" element={<LargeListDemo />} />
 
             {/* Admin Routes */}
             <Route path="/admin/login" element={<Login />} />
