@@ -13,8 +13,8 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "seed:admin": "tsx src/scripts/seed-admin.ts",
-    "seed:blog": "tsx src/scripts/seed-blog.ts"
+    "seed:admin": "node dist/scripts/seed-admin.js",
+    "seed:blog": "node dist/scripts/seed-blog.js"
   },
   "dependencies": {
     "@nestjs/common": "^10.3.0",
