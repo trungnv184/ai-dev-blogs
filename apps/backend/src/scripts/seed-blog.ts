@@ -326,12 +326,12 @@ This is one of the most common React performance issues, and it has a straightfo
 
 ## Three Approaches
 
-\\\`\\\`\\\`
+\`\`\`
 < 100 items    → Just render them
 100–1,000      → React.memo + useMemo
 1,000–10,000   → Virtualization
 10,000+        → Virtualization + server-side pagination
-\\\`\\\`\\\`
+\`\`\`
 
 Let's walk through each one.
 
@@ -341,7 +341,7 @@ Let's walk through each one.
 
 The simplest approach — render everything:
 
-\\\`\\\`\\\`tsx
+\`\`\`tsx
 function NaiveList({ items }) {
   return (
     <div style={{ height: 400, overflow: 'auto' }}>
@@ -354,7 +354,7 @@ function NaiveList({ items }) {
     </div>
   );
 }
-\\\`\\\`\\\`
+\`\`\`
 
 **Problem:** With 10,000 items, React creates 10,000 DOM nodes. The browser must layout and paint all of them, even though only ~10 are visible. Initial render can take **500ms+**.
 
@@ -364,9 +364,9 @@ function NaiveList({ items }) {
 
 ## Approach 2: Memoized Rendering
 
-Use \\\`React.memo\\\` to prevent unnecessary re-renders and \\\`useMemo\\\` to avoid recomputing derived data:
+Use \`React.memo\` to prevent unnecessary re-renders and \`useMemo\` to avoid recomputing derived data:
 
-\\\`\\\`\\\`tsx
+\`\`\`tsx
 const ListItem = React.memo(function ListItem({ item }) {
   return (
     <div>
@@ -391,15 +391,15 @@ function MemoizedList({ items, search }) {
     </div>
   );
 }
-\\\`\\\`\\\`
+\`\`\`
 
 ### Key rules for memoization:
 
-- **Stable keys** — Always use a unique \\\`id\\\`, never array index for dynamic lists
-- **Stable callbacks** — Wrap event handlers in \\\`useCallback\\\` before passing to memoized children
-- **Avoid inline objects** — \\\`style={{ color: 'red' }}\\\` creates a new object every render, breaking memo
+- **Stable keys** — Always use a unique \`id\`, never array index for dynamic lists
+- **Stable callbacks** — Wrap event handlers in \`useCallback\` before passing to memoized children
+- **Avoid inline objects** — \`style={{ color: 'red' }}\` creates a new object every render, breaking memo
 
-\\\`\\\`\\\`tsx
+\`\`\`tsx
 // Bad — breaks React.memo
 <ListItem item={item} onDelete={() => deleteItem(item.id)} />
 
@@ -408,7 +408,7 @@ const handleDelete = useCallback((id) => {
   setItems((prev) => prev.filter((i) => i.id !== id));
 }, []);
 <ListItem item={item} onDelete={handleDelete} />
-\\\`\\\`\\\`
+\`\`\`
 
 **Limitation:** Memoization helps with **re-renders**, but the initial mount is still slow because all DOM nodes are created.
 
@@ -418,7 +418,7 @@ const handleDelete = useCallback((id) => {
 
 Only render items visible in the viewport. A list of 50,000 items renders **~20 DOM nodes**.
 
-\\\`\\\`\\\`
+\`\`\`
 ┌─────────────────────┐
 │  ░░░░░░░░░░░░░░░░░  │  ← Not rendered (above viewport)
 │  ░░░░░░░░░░░░░░░░░  │
@@ -431,11 +431,11 @@ Only render items visible in the viewport. A list of 50,000 items renders **~20 
 │  ░░░░░░░░░░░░░░░░░  │  ← Not rendered (below viewport)
 │  ░░░░░░░░░░░░░░░░░  │
 └─────────────────────┘
-\\\`\\\`\\\`
+\`\`\`
 
 ### Using @tanstack/react-virtual
 
-\\\`\\\`\\\`tsx
+\`\`\`tsx
 import { useVirtualizer } from '@tanstack/react-virtual';
 
 function VirtualizedList({ items }) {
@@ -472,23 +472,23 @@ function VirtualizedList({ items }) {
     </div>
   );
 }
-\\\`\\\`\\\`
+\`\`\`
 
 ### How it works
 
 1. A scrollable container has a fixed height (the viewport)
-2. A tall inner div simulates the full list height via \\\`getTotalSize()\\\`
-3. Only visible items are rendered with \\\`position: absolute\\\` at their calculated \\\`top\\\` offset
+2. A tall inner div simulates the full list height via \`getTotalSize()\`
+3. Only visible items are rendered with \`position: absolute\` at their calculated \`top\` offset
 4. As the user scrolls, items are recycled — old ones unmount, new ones mount
-5. \\\`overscan\\\` renders a few extra items outside the viewport for smoother scrolling
+5. \`overscan\` renders a few extra items outside the viewport for smoother scrolling
 
 ### Library comparison
 
 | Library | Best For |
 |---------|----------|
-| \\\`@tanstack/react-virtual\\\` | Flexible, headless, modern (recommended) |
-| \\\`react-window\\\` | Simple fixed/variable size lists |
-| \\\`react-virtuoso\\\` | Auto-sizing, grouped lists, chat UIs |
+| \`@tanstack/react-virtual\` | Flexible, headless, modern (recommended) |
+| \`react-window\` | Simple fixed/variable size lists |
+| \`react-virtuoso\` | Auto-sizing, grouped lists, chat UIs |
 
 ---
 
@@ -496,7 +496,7 @@ function VirtualizedList({ items }) {
 
 When combining large lists with search/filter, don't re-filter on every keystroke:
 
-\\\`\\\`\\\`tsx
+\`\`\`tsx
 function SearchableList({ items }) {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -522,7 +522,7 @@ function SearchableList({ items }) {
     </>
   );
 }
-\\\`\\\`\\\`
+\`\`\`
 
 This avoids filtering 50,000 items on every keystroke — it waits 300ms for the user to stop typing.
 
@@ -544,7 +544,7 @@ The difference is dramatic. Virtualization is **50x faster** on initial render b
 
 ## Decision Flowchart
 
-\\\`\\\`\\\`
+\`\`\`
 How many items?
 │
 ├─ < 100 ──────→ Just render them. Add React.memo if items are complex.
@@ -555,7 +555,7 @@ How many items?
 │
 └─ 10,000+ ────→ Virtualization + server-side pagination
                   (don't send all data to the browser)
-\\\`\\\`\\\`
+\`\`\`
 
 ## Summary
 
@@ -567,7 +567,7 @@ How many items?
 | Expensive filtering/sorting | **useMemo** |
 | Rapid input triggering re-renders | **Debounce** |
 
-The **#1 takeaway**: for large lists, **virtualization** is the single biggest win. Everything else is optimization on top. Start with \\\`@tanstack/react-virtual\\\` — it's headless, flexible, and works with any styling approach.
+The **#1 takeaway**: for large lists, **virtualization** is the single biggest win. Everything else is optimization on top. Start with \`@tanstack/react-virtual\` — it's headless, flexible, and works with any styling approach.
 
 ---
 
