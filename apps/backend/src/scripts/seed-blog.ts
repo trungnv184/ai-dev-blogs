@@ -707,14 +707,23 @@ async function seed() {
   // Seed posts
   for (const postData of POSTS) {
     const existing = await postRepository.findOne({ where: { slug: postData.slug } });
-    if (existing) {
-      console.log(`  Post exists: ${postData.title}`);
-      continue;
-    }
 
     const category = await categoryRepository.findOne({
       where: { slug: postData.categorySlug },
     });
+
+    if (existing) {
+      // Update existing post content
+      existing.title = postData.title;
+      existing.excerpt = postData.excerpt;
+      existing.content = postData.content;
+      existing.tags = postData.tags;
+      existing.readingTime = postData.readingTime;
+      existing.categoryId = category?.id;
+      await postRepository.save(existing);
+      console.log(`  Updated post: ${postData.title}`);
+      continue;
+    }
 
     const post = postRepository.create({
       title: postData.title,
